@@ -74,16 +74,16 @@ convert_and_save_power_lines <- function(
 # file$ls(recursive = TRUE)
 # file[["X/value"]]$ls(recursive = TRUE)
 
-ids = c(1, 3, 123)
+# ids = c(1, 3, 123)
 
-power_lines_test <- get_power_lines(ids = ids, dataset = "adapt")
-power_lines_test$timestamp <- as.POSIXct(power_lines_test$timestamp, origin = "1970-01-01")
-power_lines_test_long <- melt(power_lines_test, id="timestamp")
+# power_lines_test <- get_power_lines(ids = ids, dataset = "adapt")
+# power_lines_test$timestamp <- as.POSIXct(power_lines_test$timestamp, origin = "1970-01-01")
+# power_lines_test_long <- melt(power_lines_test, id="timestamp")
 
 # Plotting
-ggplot(data=power_lines_test_long,
-       aes(x=timestamp, y=value, colour=variable)) + 
-  geom_line()
+# ggplot(data=power_lines_test_long,
+#        aes(x=timestamp, y=value, colour=variable)) + 
+#   geom_line()
 
 # Saving
-convert_and_save_power_lines(ids = ids, dataset = "adapt")
+# convert_and_save_power_lines(ids = ids, dataset = "adapt")
