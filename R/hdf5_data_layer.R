@@ -7,14 +7,20 @@ library(scales)
 ### General data configuration
 datasets <- list(
   train = list(
-    path = 'notebook/See4C_starting_kit/sample_data/train/Xm1/',
+    path = '../../starting-kit/notebook/See4C_starting_kit/sample_data/train/Xm1/',
     min_file_id = 1,
     max_file_id = 289
   ),
   adapt = list(
-    path = 'notebook/See4C_starting_kit/sample_data/adapt/',
+    path = '../../starting-kit/notebook/See4C_starting_kit/sample_data/adapt/',
     min_file_id = 0,
     max_file_id = 68
+  ),
+  aux_opsd_train = list(
+    path = '../../starting-kit/auxiliaryData/train/aux/opsd15/'
+  ),
+  aux_NOAA_train = list(
+    path = '../../starting-kit/auxiliaryData/train/aux/NOAA_HYCOM/'
   )
 )
 total_number_of_lines <- 1916
@@ -72,7 +78,7 @@ convert_and_save_power_lines <- function(
 
 # Inspect recursively the content of the hdf5 file
 # file$ls(recursive = TRUE)
-# file[["X/value"]]$ls(recursive = TRUE)
+# file[["X/value/X/value"]]$ls(recursive = TRUE)
 
 # ids = c(1, 3, 123)
 
