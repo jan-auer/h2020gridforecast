@@ -19,14 +19,75 @@ datasets <- list(
   aux_gosat_adapt = list(
     path = "/home/datascience/starting-kit/auxiliaryData/adapt/aux/"
   ),
-  aux_opsd_train = list(
+  aux_opsd_15_train = list(
     path = '/home/datascience/starting-kit/auxiliaryData/train/aux/opsd15/'
+  ),
+  aux_opsd_15_adapt = list(
+    path = '/home/datascience/starting-kit/auxiliaryData/adapt/aux/opsd15/'
+  ),
+  aux_opsd_60_adapt = list(
+    path = '/home/datascience/starting-kit/auxiliaryData/adapt/aux/opsd60/'
   ),
   aux_NOAA_train = list(
     path = '/home/datascience/starting-kit/auxiliaryData/train/aux/NOAA_HYCOM/'
   )
 )
 total_number_of_lines <- 1916
+
+### Retrieve OPSD data
+get_opsd <- function(
+  dataset = "aux_opsd_15_train"
+) {
+  if(exists("opsd")){
+    rm("opsd")
+  }
+  dirname <- datasets[[dataset]]$path
+  subdirs <- list.dirs(path = dirname, full.names = FALSE)[-1]
+  for (dir in subdirs) {
+    files <- list.files(path = paste0(dirname, dir), full.names = FALSE, pattern = "*.h5")
+    for(ffile in files) {
+      filename <- paste0(dirname, dir, "/", ffile)
+      file <- H5File$new(filename = filename, mode = "r")
+      t <- file[["X/value/t/value"]]
+      column_count <- file[["X/value/metadata/value/feature_names/value/dims"]][1]
+      column_names <- c()
+      for (i in 0:(column_count-1)) {
+        column_names <- c(
+          column_names, 
+          paste(
+            unlist(lapply(
+              file[[
+                paste0("X/value/metadata/value/feature_names/value/_", formatC(x = i, width = 2, flag = "0"), "/value")
+                ]][1,], 
+              function(n) { rawToChar(as.raw(n)) }
+            )), 
+            collapse = ''
+          )
+        )
+      }
+      X <- data.frame(t(file[["X/value/X/value"]][,]))
+      colnames(X) <- column_names
+      X$timestamp = t[,1]
+      file$close()
+      if(exists("opsd")){
+        opsd <- bind_rows(opsd, X)
+      } else {
+        opsd <- X
+      }
+    }
+  }
+  return(opsd)
+}
+
+### Retrieve OPSD data, but only the columns where at least one value is not NaN
+get_opsd_not_NaN <- function() {
+  opsd <- get_opsd()
+  not_NaN_columns <- data.frame(
+    column = colnames(opsd), 
+    average = unlist(lapply(colnames(opsd), function (x) mean(opsd %>% pull(x), na.rm = TRUE)))
+  ) %>% filter(!(is.nan(average))) %>% pull(column)
+  return(opsd %>% select(one_of(as.character(not_NaN_columns))))
+}
 
 ### Retrieve Gosat data
 get_gosat <- function(
