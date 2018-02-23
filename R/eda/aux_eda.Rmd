@@ -1,0 +1,115 @@
+---
+title: "H2020: Exploratory data analysis of auxiliary data"
+author: "Jakob Etzel"
+date: "22 Feb 2018"
+output: html_document
+runtime: shiny
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(lubridate)
+library(rworldmap)
+library(knitr)
+library(randomcoloR)
+newmap <- getMap(resolution = "low")
+source(file = "../hdf5_data_layer.R")
+```
+
+## GOSAT
+
+Format/extension: h5.
+Measurements available for 5 consecutive days, but each with varying (amounts) of geolocations.
+Contents details see http://www.gosat.nies.go.jp/en/about_5_products.html, L2 data
+
+| file name | product code | product name |
+|---|---|---|
+| gosat_FTS_C01S_2 | C01S | L2 CO2 column amount (SWIR) |
+| gosat_FTS_C02S_2 | C02S | L2 CH4 column amount (SWIR) |
+| gosat_FTS_C03S_2 | C03S | L2 H2O column amount (SWIR) |
+
+```{r data retrieval, echo=FALSE, results='hide', warning=FALSE, message=FALSE}
+gosat <- get_gosat()
+gosat$H2O$day = date(ymd_hms(gosat$H2O$timestamp))
+gosat$CO2$day = date(ymd_hms(gosat$CO2$timestamp))
+gosat$CH4$day = date(ymd_hms(gosat$CH4$timestamp))
+days <- gosat$H2O %>% select(day) %>% unique() %>% pull(day)
+```
+
+We have data from the following days: `r days`.
+
+## Relation between the three products
+Overall, the timeseries are measuring exactly simultaneously (both time and geolocation). However, there are two data points in C02S which are not present in C01S (time, lon, lat):
+```{r}
+(gosat$CO2 %>% select(timestamp, lon, lat))[c(449, 697),]
+```
+
+Between C01S and C03S the first 448 entries are synchronous. From then on, longitudinal values differ completely, i.e. no longitudinal value of either the C01S or C02S time series occurs anywhere in the C03S time series. This is because the second data batch is not of days "2010-07-13" and "2010-07-14", but "2010-07-18" and "2010-07-19".
+
+## CO2 data
+
+### World Map Plot
+
+We plot all the measurement geolocations and colour them according to the measurement day.
+
+```{r echo=FALSE}
+selectInput(
+  inputId = "gosat_product", 
+  label = "GOSAT product:", 
+  choices=names(gosat)
+)
+```
+
+```{r global map, echo=FALSE}
+renderPlot({
+  plot(newmap, asp = 1)
+  product_geolocations <- gosat[[input$gosat_product]] %>% select(lon, lat, day)
+  days <- product_geolocations$day %>% unique()
+  palette <- distinctColorPalette(k = length(days))
+  for (i in 1:length(days)) {
+    points(product_geolocations %>% filter(day == days[i]) %>% pull(lon), product_geolocations %>% filter(day == days[i]) %>% pull(lat), col = palette[i], cex = .6)
+  }
+})
+# points((gosat$CO2 %>% filter(day == days[1]))$lon, (gosat$CO2 %>% filter(day == days[1]))$lat, col = "red", cex = .6)
+# points((gosat$CO2 %>% filter(day == days[2]))$lon, (gosat$CO2 %>% filter(day == days[2]))$lat, col = "blue", cex = .6)
+# points((gosat$CO2 %>% filter(day == days[3]))$lon, (gosat$CO2 %>% filter(day == days[3]))$lat, col = "green", cex = .6)
+# points((gosat$CO2 %>% filter(day == days[4]))$lon, (gosat$CO2 %>% filter(day == days[4]))$lat, col = "orange", cex = .6)
+# points((gosat$CO2 %>% filter(day == days[5]))$lon, (gosat$CO2 %>% filter(day == days[5]))$lat, col = "yellow", cex = .6)
+```
+
+Now same data zoomed in on Europe:
+
+```{r Europe map, echo=FALSE}
+renderPlot({
+  plot(newmap, xlim = c(-20, 59), ylim = c(35, 71), asp = 1)
+  product_geolocations <- gosat[[input$gosat_product]] %>% select(lon, lat, day)
+  days <- product_geolocations$day %>% unique()
+  palette <- distinctColorPalette(k = length(days))
+  for (i in 1:length(days)) {
+    points(product_geolocations %>% filter(day == days[i]) %>% pull(lon), product_geolocations %>% filter(day == days[i]) %>% pull(lat), col = palette[i], cex = .6)
+  }
+})
+```
+
+Out of a lot of available columns I tried to select the most relevant ones. *Timestamp* is the time of the satellite measurement, *day* is the date of the timestamp, *lat* and *lon* define the area of the measurement (somehow the centre of the inspection area), *dryAirColumn* and *surfacePressure* are auxiliary data measured; *CO2TotalColumn* and *xco2* (mixing ratio) are the main measurements. *surfaceAlbedo*, *surfaceWindSpeed* and *temperatureProfile* are reference data from an external source.
+
+As an example, here the first five entries. Afterwards the histograms of the measurements (over all days and ovservations).
+
+```{r sample data, echo=FALSE}
+kable(x = gosat$CO2[1:5,])
+hist(gosat$CO2$CO2TotalColumn)
+hist(gosat$CO2$XCO2)
+hist(gosat$CO2$dryAirTotalColumn)
+hist(gosat$CO2$surfacePressure)
+hist(gosat$CO2$surfaceAlbedo)
+hist(gosat$CO2$surfaceWindSpeed)
+hist(gosat$CO2$temperatureProfile)
+```
+
+It seems as if for *albedo* and *temperature* the value -9999 equals a non-existing or faulty value. We therefore plot again the histgrams ommitting these data points:
+
+```{r sample data extra hists, echo=FALSE}
+hist(gosat$CO2 %>% filter(temperatureProfile != -9999) %>% pull(temperatureProfile))
+hist(gosat$CO2 %>% filter(surfaceAlbedo != -9999) %>% pull(surfaceAlbedo))
+```
+
