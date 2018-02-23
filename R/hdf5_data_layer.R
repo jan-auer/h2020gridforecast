@@ -7,23 +7,257 @@ library(scales)
 ### General data configuration
 datasets <- list(
   train = list(
-    path = '../../starting-kit/notebook/See4C_starting_kit/sample_data/train/Xm1/',
+    path = '/home/datascience/starting-kit/notebook/See4C_starting_kit/sample_data/train/Xm1/',
     min_file_id = 1,
     max_file_id = 289
   ),
   adapt = list(
-    path = '../../starting-kit/notebook/See4C_starting_kit/sample_data/adapt/',
+    path = '/home/datascience/starting-kit/notebook/See4C_starting_kit/sample_data/adapt/',
     min_file_id = 0,
     max_file_id = 68
   ),
+  aux_gosat_adapt = list(
+    path = "/home/datascience/starting-kit/auxiliaryData/adapt/aux/"
+  ),
   aux_opsd_train = list(
-    path = '../../starting-kit/auxiliaryData/train/aux/opsd15/'
+    path = '/home/datascience/starting-kit/auxiliaryData/train/aux/opsd15/'
   ),
   aux_NOAA_train = list(
-    path = '../../starting-kit/auxiliaryData/train/aux/NOAA_HYCOM/'
+    path = '/home/datascience/starting-kit/auxiliaryData/train/aux/NOAA_HYCOM/'
   )
 )
 total_number_of_lines <- 1916
+
+### Retrieve Gosat data
+get_gosat <- function(
+  dataset = "aux_gosat_adapt",
+  folders = c()
+) {
+
+  if(length(folders) == 0) {
+    dirname <- paste0(datasets[[dataset]]$path, "gosat_FTS_C01S_2/")
+    subdirs <- list.dirs(path = dirname, full.names = FALSE)[-1]
+    folders <- unlist(lapply(subdirs, function (x) as.integer(gsub(pattern = "X", replacement = "", x = x))))
+  }
+
+  ## C01S ## CO2 data
+  dirname <- paste0(datasets[[dataset]]$path, "gosat_FTS_C01S_2/")
+  CO2 <- data.frame(
+    timestamp = character(),
+    lat = double(),
+    lon = double(),
+    dryAirTotalColumn = double(),
+    surfacePressure = double(),
+    CO2TotalColumn = double(),
+    # CO2TotalColumnExternalError = double(),
+    # CO2TotalColumnInterferenceError = double(),
+    # CO2TotalColumnRetrievalNoise = double(),
+    # CO2TotalColumnSmoothingError = double()
+    surfaceAlbedo = double(),
+    surfaceWindSpeed = double(),
+    temperatureProfile = double(),
+    XCO2 = double()
+  )
+  for(folder in folders) {
+    files <- list.files(path = paste0(dirname, "X", folder), full.names = FALSE, pattern = "*.h5")
+    for(ffile in files) {
+      filename <- paste0(dirname, "X", folder, "/", ffile)
+      file <- H5File$new(filename = filename, mode = "r")
+  
+      datestamp <- file[["Global/MD_Metadata/dateStamp"]][]
+      # geoloaction and time
+      time <- data.frame(
+        timestamp = as.character(file[["scanAttribute/time"]][])
+      )
+      geolocations <- data.frame(
+        lat = file[["Data/geolocation/latitude"]][],
+        lon = file[["Data/geolocation/longitude"]][]
+      )
+      
+      # aux params
+      auxiliary_parameters <- data.frame(
+        #    aerosolOpticalThickness = lapply(1:180, (function (x) file[["Data/auxiliaryParameter/aerosolOpticalThickness"]][,,x])),
+        dryAirTotalColumn = file[["Data/auxiliaryParameter/dryAirTotalColumn"]][],
+        surfacePressure = file[["Data/auxiliaryParameter/surfacePressure"]][]
+      )
+      # total columns
+      total_column <- data.frame(
+        CO2TotalColumn = file[["Data/totalColumn/CO2TotalColumn"]][]#,
+#        CO2TotalColumnExternalError = file[["Data/totalColumn/CO2TotalColumnExternalError"]][],
+#        CO2TotalColumnInterferenceError = file[["Data/totalColumn/CO2TotalColumnInterferenceError"]][],
+#        CO2TotalColumnRetrievalNoise = file[["Data/totalColumn/CO2TotalColumnRetrievalNoise"]][],
+#        CO2TotalColumnSmoothingError = file[["Data/totalColumn/CO2TotalColumnSmoothingError"]][]
+      )
+      # reference data columns
+      reference_data <- data.frame(
+        surfaceAlbedo = file[["scanAttribute/referenceData/surfaceAlbedo"]][1,],
+        surfaceWindSpeed = file[["scanAttribute/referenceData/surfaceWindSpeed"]][],
+        temperatureProfile = file[["scanAttribute/referenceData/surfaceAlbedo"]][1,]
+      )
+      
+      # mixing ratio
+      mixing_ratio <- data.frame(
+        XCO2 = file[["Data/mixingRatio/XCO2"]][]
+      )
+      
+      CO2 <- bind_rows(CO2, bind_cols(
+        time,
+        geolocations,
+        auxiliary_parameters,
+        total_column,
+        reference_data,
+        mixing_ratio
+      ))
+      file$close()
+    }
+  }
+  
+  ## C02S ## CH4 data
+  dirname <- paste0(datasets[[dataset]]$path, "gosat_FTS_C02S_2/")
+  CH4 <- data.frame(
+    timestamp = character(),
+    lat = double(),
+    lon = double(),
+    dryAirTotalColumn = double(),
+    surfacePressure = double(),
+    CH4TotalColumn = double(),
+    # CH4TotalColumnExternalError = double(),
+    # CH4TotalColumnInterferenceError = double(),
+    # CH4TotalColumnRetrievalNoise = double(),
+    # CH4TotalColumnSmoothingError = double()
+    surfaceAlbedo = double(),
+    surfaceWindSpeed = double(),
+    temperatureProfile = double(),
+    XCH4 = double()
+  )
+  for(folder in folders) {
+    files <- list.files(path = paste0(dirname, "X", folder), full.names = FALSE, pattern = "*.h5")
+    for(ffile in files) {
+      filename <- paste0(dirname, "X", folder, "/", ffile)
+      file <- H5File$new(filename = filename, mode = "r")
+      
+      datestamp <- file[["Global/MD_Metadata/dateStamp"]][]
+      # geoloaction and time
+      time <- data.frame(
+        timestamp = as.character(file[["scanAttribute/time"]][])
+      )
+      geolocations <- data.frame(
+        lat = file[["Data/geolocation/latitude"]][],
+        lon = file[["Data/geolocation/longitude"]][]
+      )
+      
+      # aux params
+      auxiliary_parameters <- data.frame(
+        #    aerosolOpticalThickness = lapply(1:180, (function (x) file[["Data/auxiliaryParameter/aerosolOpticalThickness"]][,,x])),
+        dryAirTotalColumn = file[["Data/auxiliaryParameter/dryAirTotalColumn"]][],
+        surfacePressure = file[["Data/auxiliaryParameter/surfacePressure"]][]
+      )
+      # total columns
+      total_column <- data.frame(
+        CH4TotalColumn = file[["Data/totalColumn/CH4TotalColumn"]][]#,
+        #        CH4TotalColumnExternalError = file[["Data/totalColumn/CH4TotalColumnExternalError"]][],
+        #        CH4TotalColumnInterferenceError = file[["Data/totalColumn/CH4TotalColumnInterferenceError"]][],
+        #        CH4TotalColumnRetrievalNoise = file[["Data/totalColumn/CH4TotalColumnRetrievalNoise"]][],
+        #        CH4TotalColumnSmoothingError = file[["Data/totalColumn/CH4TotalColumnSmoothingError"]][]
+      )
+      # reference data columns
+      reference_data <- data.frame(
+        surfaceAlbedo = file[["scanAttribute/referenceData/surfaceAlbedo"]][1,],
+        surfaceWindSpeed = file[["scanAttribute/referenceData/surfaceWindSpeed"]][],
+        temperatureProfile = file[["scanAttribute/referenceData/surfaceAlbedo"]][1,]
+      )
+      
+      # mixing ratio
+      mixing_ratio <- data.frame(
+        XCH4 = file[["Data/mixingRatio/XCH4"]][]
+      )
+      
+      CH4 <- bind_rows(CH4, bind_cols(
+        time,
+        geolocations,
+        auxiliary_parameters,
+        total_column,
+        reference_data,
+        mixing_ratio
+      ))
+      file$close()
+    }
+  }
+  
+  ## C03S ## H2O data
+  dirname <- paste0(datasets[[dataset]]$path, "gosat_FTS_C03S_2/")
+  H2O <- data.frame(
+    timestamp = character(),
+    lat = double(),
+    lon = double(),
+    dryAirTotalColumn = double(),
+    surfacePressure = double(),
+    H2OTotalColumn = double(),
+    # H2OTotalColumnExternalError = double(),
+    # H2OTotalColumnInterferenceError = double(),
+    # H2OTotalColumnRetrievalNoise = double(),
+    # H2OTotalColumnSmoothingError = double()
+    surfaceAlbedo = double(),
+    surfaceWindSpeed = double(),
+    temperatureProfile = double(),
+    XH2O = double()
+  )
+  for(folder in folders) {
+    files <- list.files(path = paste0(dirname, "X", folder), full.names = FALSE, pattern = "*.h5")
+    for(ffile in files) {
+      filename <- paste0(dirname, "X", folder, "/", ffile)
+      file <- H5File$new(filename = filename, mode = "r")
+      
+      datestamp <- file[["Global/MD_Metadata/dateStamp"]][]
+      # geoloaction and time
+      time <- data.frame(
+        timestamp = as.character(file[["scanAttribute/time"]][])
+      )
+      geolocations <- data.frame(
+        lat = file[["Data/geolocation/latitude"]][],
+        lon = file[["Data/geolocation/longitude"]][]
+      )
+      
+      # aux params
+      auxiliary_parameters <- data.frame(
+        #    aerosolOpticalThickness = lapply(1:180, (function (x) file[["Data/auxiliaryParameter/aerosolOpticalThickness"]][,,x])),
+        dryAirTotalColumn = file[["Data/auxiliaryParameter/dryAirTotalColumn"]][],
+        surfacePressure = file[["Data/auxiliaryParameter/surfacePressure"]][]
+      )
+      # total columns
+      total_column <- data.frame(
+        H2OTotalColumn = file[["Data/totalColumn/H2OTotalColumn"]][]#,
+        #        H2OTotalColumnExternalError = file[["Data/totalColumn/H2OTotalColumnExternalError"]][],
+        #        H2OTotalColumnInterferenceError = file[["Data/totalColumn/H2OTotalColumnInterferenceError"]][],
+        #        H2OTotalColumnRetrievalNoise = file[["Data/totalColumn/H2OTotalColumnRetrievalNoise"]][],
+        #        H2OTotalColumnSmoothingError = file[["Data/totalColumn/H2OTotalColumnSmoothingError"]][]
+      )
+      # reference data columns
+      reference_data <- data.frame(
+        surfaceAlbedo = file[["scanAttribute/referenceData/surfaceAlbedo"]][1,],
+        surfaceWindSpeed = file[["scanAttribute/referenceData/surfaceWindSpeed"]][],
+        temperatureProfile = file[["scanAttribute/referenceData/surfaceAlbedo"]][1,]
+      )
+      
+      # mixing ratio
+      mixing_ratio <- data.frame(
+        XH2O = file[["Data/mixingRatio/XH2O"]][]
+      )
+      
+      H2O <- bind_rows(H2O, bind_cols(
+        time,
+        geolocations,
+        auxiliary_parameters,
+        total_column,
+        reference_data,
+        mixing_ratio
+      ))
+      file$close()
+    }
+  }
+  
+  return(list(CO2 = CO2, CH4 = CH4, H2O = H2O))
+}
 
 ### Get time series for one or more power lines in form of a data.frame
 get_power_lines <- function(

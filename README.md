@@ -5,4 +5,4 @@ We assume the following folder structure (relative to this repo's folder):
 *../local_data* (a folder to store results / reformatted data)
 *../starting-kit* (the whole decompressed starting-kit folder)
 
-Run the *R/setup.R* script to create R files for data exploration saved in *../local_data*.
+Run the *R/setup.R* script to convert hdf5 data to R variables saved in rds files in *../local_data*.
