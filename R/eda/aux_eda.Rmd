@@ -13,14 +13,15 @@ library(rworldmap)
 library(knitr)
 library(randomcoloR)
 newmap <- getMap(resolution = "low")
-source(file = "../hdf5_data_layer.R")
+source(file = "/home/datascience/h2020gridforecast/R/hdf5_data_layer.R")
 ```
 
 ## GOSAT
-
 Format/extension: h5.
 Measurements available for 5 consecutive days, but each with varying (amounts) of geolocations.
-Contents details see http://www.gosat.nies.go.jp/en/about_5_products.html, L2 data
+Contents details see the [products page](http://www.gosat.nies.go.jp/en/about_5_products.html), section L2 data.
+
+[Greenhouse gases Observing SATellite (GOSAT) Data Policy](https://data2.gosat.nies.go.jp/doc/GOSAT_Data_PolicyB_en.pdf)
 
 | file name | product code | product name |
 |---|---|---|
@@ -38,15 +39,13 @@ days <- gosat$H2O %>% select(day) %>% unique() %>% pull(day)
 
 We have data from the following days: `r days`.
 
-## Relation between the three products
+### Relation between the three products
 Overall, the timeseries are measuring exactly simultaneously (both time and geolocation). However, there are two data points in C02S which are not present in C01S (time, lon, lat):
 ```{r}
 (gosat$CO2 %>% select(timestamp, lon, lat))[c(449, 697),]
 ```
 
 Between C01S and C03S the first 448 entries are synchronous. From then on, longitudinal values differ completely, i.e. no longitudinal value of either the C01S or C02S time series occurs anywhere in the C03S time series. This is because the second data batch is not of days "2010-07-13" and "2010-07-14", but "2010-07-18" and "2010-07-19".
-
-## CO2 data
 
 ### World Map Plot
 
@@ -91,6 +90,7 @@ renderPlot({
 })
 ```
 
+### CO2 data
 Out of a lot of available columns I tried to select the most relevant ones. *Timestamp* is the time of the satellite measurement, *day* is the date of the timestamp, *lat* and *lon* define the area of the measurement (somehow the centre of the inspection area), *dryAirColumn* and *surfacePressure* are auxiliary data measured; *CO2TotalColumn* and *xco2* (mixing ratio) are the main measurements. *surfaceAlbedo*, *surfaceWindSpeed* and *temperatureProfile* are reference data from an external source.
 
 As an example, here the first five entries. Afterwards the histograms of the measurements (over all days and ovservations).
@@ -113,3 +113,36 @@ hist(gosat$CO2 %>% filter(temperatureProfile != -9999) %>% pull(temperatureProfi
 hist(gosat$CO2 %>% filter(surfaceAlbedo != -9999) %>% pull(surfaceAlbedo))
 ```
 
+## Open Power Systems Data (OPSD)
+Format/extension: h5.
+Prepared from downloaded .csv files (15 min and 60 min interval data), it has been converted to .h5 format and sliced to be in sync with the target data by the competition organisers.
+Contents: Corresponding .csv column names are found in field metadata.feature_names of the h5 file.
+
+[About Open Power System Data](https://open-power-system-data.org/about/)
+[README file](https://data.open-power-system-data.org/time_series/2017-07-09/README.md)
+
+Time resolution of the data is 15 minutes. We list here the column names and the average measurement values for each column. The frequent occurences of NaN as an average value show that most of the time series are completely empty.
+```{r, echo=FALSE}
+opsd <- get_opsd()
+data.frame("column name" = colnames(opsd), "average value" = unlist(lapply(colnames(opsd), function (x) mean(opsd %>% pull(x), na.rm = TRUE))))
+```
+
+We plot now the first 5 existent time series:
+```{r echo=FALSE}
+opsd <- get_opsd_not_NaN()
+opsd$datetime = as.POSIXct(opsd$timestamp, origin = "1970-01-01")
+
+selectInput(
+  inputId = "opsd_columns", 
+  label = "OPSD columns:", 
+  choices=colnames(opsd)
+)
+```
+
+```{r echo=FALSE}
+renderPlot({
+  print(input$opsd_columns)
+  plot(opsd$datetime, opsd %>% pull(input$opsd_columns), type = "l")
+  title(main = input$opsd_columns)
+})
+```
