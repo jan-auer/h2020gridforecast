@@ -1,6 +1,4 @@
 library(hdf5r)
-library(reshape2)
-library(ggplot2)
 library(dplyr)
 library(scales)
 
@@ -50,6 +48,7 @@ get_opsd <- function(
       file <- H5File$new(filename = filename, mode = "r")
       t <- file[["X/value/t/value"]]
       column_count <- file[["X/value/metadata/value/feature_names/value/dims"]][1]
+      index_width <- nchar(file[["X/value/metadata/value/feature_names/value"]]$ls()$name[1]) - 1
       column_names <- c()
       for (i in 0:(column_count-1)) {
         column_names <- c(
@@ -57,7 +56,7 @@ get_opsd <- function(
           paste(
             unlist(lapply(
               file[[
-                paste0("X/value/metadata/value/feature_names/value/_", formatC(x = i, width = 2, flag = "0"), "/value")
+                paste0("X/value/metadata/value/feature_names/value/_", formatC(x = i, width = index_width, flag = "0"), "/value")
                 ]][1,], 
               function(n) { rawToChar(as.raw(n)) }
             )), 
@@ -67,7 +66,13 @@ get_opsd <- function(
       }
       X <- data.frame(t(file[["X/value/X/value"]][,]))
       colnames(X) <- column_names
-      X$timestamp = t[,1]
+      X$timestamp <- tryCatch(
+        {
+          t[,1]
+        }, error = function(e) {
+          return(t[])
+        }
+      )
       file$close()
       if(exists("opsd")){
         opsd <- bind_rows(opsd, X)
@@ -80,8 +85,8 @@ get_opsd <- function(
 }
 
 ### Retrieve OPSD data, but only the columns where at least one value is not NaN
-get_opsd_not_NaN <- function() {
-  opsd <- get_opsd()
+get_opsd_not_NaN <- function(dataset = "aux_opsd_15_train") {
+  opsd <- get_opsd(dataset)
   not_NaN_columns <- data.frame(
     column = colnames(opsd), 
     average = unlist(lapply(colnames(opsd), function (x) mean(opsd %>% pull(x), na.rm = TRUE)))
