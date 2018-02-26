@@ -1,8 +1,12 @@
 ---
 title: "H2020: Exploratory data analysis of auxiliary data"
 author: "Jakob Etzel"
-date: "22 Feb 2018"
-output: html_document
+date: "26 Feb 2018"
+output: 
+  html_document:
+    toc: true
+    toc_depth: 2
+    toc_float: true
 runtime: shiny
 ---
 
@@ -12,6 +16,7 @@ library(lubridate)
 library(rworldmap)
 library(knitr)
 library(randomcoloR)
+library(rje)
 newmap <- getMap(resolution = "low")
 source(file = "/home/datascience/h2020gridforecast/R/hdf5_data_layer.R")
 ```
@@ -113,36 +118,154 @@ hist(gosat$CO2 %>% filter(temperatureProfile != -9999) %>% pull(temperatureProfi
 hist(gosat$CO2 %>% filter(surfaceAlbedo != -9999) %>% pull(surfaceAlbedo))
 ```
 
-## Open Power Systems Data (OPSD)
+## Open Power Systems Data (OPSD) {.tabset}
 Format/extension: h5.
-Prepared from downloaded .csv files (15 min and 60 min interval data), it has been converted to .h5 format and sliced to be in sync with the target data by the competition organisers.
-Contents: Corresponding .csv column names are found in field metadata.feature_names of the h5 file.
+Prepared by competition organisers from downloaded .csv files (15 min and 60 min interval data), it has been converted to .h5 format and sliced to be in sync with the target data by the competition organisers.
 
 [About Open Power System Data](https://open-power-system-data.org/about/)
 [README file](https://data.open-power-system-data.org/time_series/2017-07-09/README.md)
 
+Data includes *([15] means 15 min resolution; others in 60 min resolution) -- only those columns listed where time series is non-empty*:
+
+* capacity
+    + solar (DE) [15]
+    + wind offshore/onshore/total (DE [50Hz, Amprion, Tennet, total]) [15]
+* generation
+    + wind offshore/onshore (AT, DE [50HZ, Amprion, Tennet, TransnetBW, total], DK [1, 2], SE)
+    + solar (DE [Amprion, Tennet], SE)
+* forecast
+    + wind (DE [50Hz, Amprion, Tennet, TransnetBW])
+    + solar (DE [50Hz, Amprion, Tennet])
+* wind profile *Percentage of wind capacity producing in Germany* (DE)
+* load (AT, BA, BE, BG, CH, CY, CZ, DE, DK, EE, ES, FI, FR, GB [total, NIR], GR, HR, HU, IE, IS, IT, , LT, LU, LC, ME, MK, NL, NO, PL, PT, RO, RS, SE, SI, SK)
+* price day-ahead (DE, DK [1, 2], NO, SE)
+
+### OPSD 15 (train)
 Time resolution of the data is 15 minutes. We list here the column names and the average measurement values for each column. The frequent occurences of NaN as an average value show that most of the time series are completely empty.
 ```{r, echo=FALSE}
-opsd <- get_opsd()
-data.frame("column name" = colnames(opsd), "average value" = unlist(lapply(colnames(opsd), function (x) mean(opsd %>% pull(x), na.rm = TRUE))))
+aux_opsd_15_train <- readRDS(file = "../../../local_data/aux_opsd_15_train.rds")
+data.frame("column name" = colnames(aux_opsd_15_train), "average value" = unlist(lapply(colnames(aux_opsd_15_train), function (x) mean(aux_opsd_15_train %>% pull(x), na.rm = TRUE))))
+
+aux_opsd_15_train_not_NaN <- readRDS(file = "../../../local_data/aux_opsd_15_train_not_NaN.rds")
+aux_opsd_15_train_not_NaN$datetime = as.POSIXct(aux_opsd_15_train_not_NaN$timestamp, origin = "1970-01-01")
 ```
 
-We plot now the first 5 existent time series:
-```{r echo=FALSE}
-opsd <- get_opsd_not_NaN()
-opsd$datetime = as.POSIXct(opsd$timestamp, origin = "1970-01-01")
+The start and end of the data are:
+```{r}
+summary(aux_opsd_15_train_not_NaN %>% select(datetime))[1]
+summary(aux_opsd_15_train_not_NaN %>% select(datetime))[6]
+```
 
+We plot now the non-empty time series:
+```{r echo=FALSE}
 selectInput(
-  inputId = "opsd_columns", 
+  inputId = "opsd_15_train_columns", 
   label = "OPSD columns:", 
-  choices=colnames(opsd)
+  choices=colnames(aux_opsd_15_train_not_NaN)
 )
 ```
 
 ```{r echo=FALSE}
 renderPlot({
-  print(input$opsd_columns)
-  plot(opsd$datetime, opsd %>% pull(input$opsd_columns), type = "l")
-  title(main = input$opsd_columns)
+  plot(sort(aux_opsd_15_train_not_NaN$datetime), aux_opsd_15_train_not_NaN %>% arrange (datetime) %>% pull(input$opsd_15_train_columns), type = "l")
+  title(main = input$opsd_15_train_columns)
 })
 ```
+
+### OPSD 15 (adapt)
+Available in the starter kit's `auxiliaryData/adapt` folder. Time resolution of the data is 15 minutes. Data is structured in a lot of different files which are numbered and should mimic forecasting steps, i.e. data updates being received every hour. Therefore, the single files only contain one timestep each.
+
+For these hourly measurements, we have 57 different columns available.
+We list here the column names and the average measurement values for each column. The frequent occurences of NaN as an average value show that most of the time series are completely empty.
+
+```{r, echo=FALSE}
+aux_opsd_15_adapt <- readRDS(file = "../../../local_data/aux_opsd_15_adapt.rds")
+data.frame("column name" = colnames(aux_opsd_15_adapt), "average value" = unlist(lapply(colnames(aux_opsd_15_adapt), function (x) mean(aux_opsd_15_adapt %>% pull(x), na.rm = TRUE))))
+
+aux_opsd_15_adapt_not_NaN <- readRDS(file = "../../../local_data/aux_opsd_15_adapt_not_NaN.rds")
+aux_opsd_15_adapt_not_NaN$datetime = as.POSIXct(aux_opsd_15_adapt_not_NaN$timestamp, origin = "1970-01-01")
+```
+
+The start and end of the data are:
+```{r}
+summary(aux_opsd_15_adapt_not_NaN %>% select(datetime))[1]
+summary(aux_opsd_15_adapt_not_NaN %>% select(datetime))[6]
+```
+
+We plot now the non-empty time series:
+
+```{r echo=FALSE}
+selectInput(
+  inputId = "opsd_15_adapt_columns", 
+  label = "OPSD columns:", 
+  choices=colnames(aux_opsd_15_adapt_not_NaN)
+)
+```
+
+```{r echo=FALSE}
+renderPlot({
+  plot(sort(aux_opsd_15_adapt_not_NaN$datetime), aux_opsd_15_adapt_not_NaN %>% arrange(datetime) %>% pull(input$opsd_15_adapt_columns), type = "l")
+  title(main = input$opsd_15_adapt_columns)
+})
+```
+
+### OPSD 60 (adapt)
+Available in the starter kit's `auxiliaryData/adapt` folder. Time resolution of the data is 60 minutes. Data is structured in a lot of different files which are numbered and should mimic forecasting steps, i.e. data updates being received every hour. Therefore, the single files only contain one timestep each.
+
+The numbering of the files shows steps - there is no no. 48, 49. Also the order of the timestamps seems not to be monotone.
+
+```{r}
+list.dirs(
+  path = "/home/datascience/starting-kit/auxiliaryData/adapt/aux/opsd60/", 
+  full.names = FALSE
+)[-1]
+```
+
+For these hourly measurements, we have 259 different columns available.
+We list here the column names and the average measurement values for each column. The frequent occurences of NaN as an average value show that most of the time series are completely empty.
+
+```{r, echo=FALSE}
+aux_opsd_60_adapt <- readRDS(file = "../../../local_data/aux_opsd_60_adapt.rds")
+data.frame("column name" = colnames(aux_opsd_60_adapt), "average value" = unlist(lapply(colnames(aux_opsd_60_adapt), function (x) mean(aux_opsd_60_adapt %>% pull(x), na.rm = TRUE))))
+
+aux_opsd_60_adapt_not_NaN <- readRDS(file = "../../../local_data/aux_opsd_60_adapt_not_NaN.rds")
+aux_opsd_60_adapt_not_NaN$datetime = as.POSIXct(aux_opsd_60_adapt_not_NaN$timestamp, origin = "1970-01-01")
+```
+
+The start and end of the data are:
+```{r}
+summary(aux_opsd_60_adapt_not_NaN %>% select(datetime))[1]
+summary(aux_opsd_60_adapt_not_NaN %>% select(datetime))[6]
+```
+
+We plot now the non-empty time series:
+```{r echo=FALSE}
+selectInput(
+  inputId = "opsd_60_adapt_columns", 
+  label = "OPSD columns:", 
+  choices=colnames(aux_opsd_60_adapt_not_NaN)
+)
+```
+
+```{r echo=FALSE}
+renderPlot({
+  plot(sort(aux_opsd_60_adapt_not_NaN$datetime), aux_opsd_60_adapt_not_NaN %>% arrange(datetime) %>% pull(input$opsd_60_adapt_columns), type = "l")
+  title(main = input$opsd_60_adapt_columns)
+})
+```
+
+### Comparison
+The OPSD 15 train and adapt data set have the same columns. All OPSD 15 columns also appear in OPSD 60. For OPSD 15, the numbers of non-empty columns differ between training and adapt data set.
+```{r}
+min(colnames(aux_opsd_15_adapt) == colnames(aux_opsd_15_train))
+is.subset(colnames(aux_opsd_15_adapt), colnames(aux_opsd_60_adapt))
+length(colnames(aux_opsd_15_adapt_not_NaN)) == length(colnames(aux_opsd_15_train_not_NaN))
+```
+
+## NOAA {.tabset}
+
+### HYCOM
+So far no analysis done.
+
+### NCOM
+So far no analysis done.
