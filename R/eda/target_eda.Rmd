@@ -127,8 +127,7 @@ Choose here a power line ID to see the respective historical measurements.
 selectInput(
   inputId = "target_adapt_column", 
   label = "power line ID:", 
-  choices=colnames(adapt_all %>% select(-timestamp)), 
-  selectize = FALSE
+  choices=colnames(adapt_all %>% select(-timestamp))
 )
 adapt_all$datetime = as.POSIXct(adapt_all$timestamp, origin = "1970-01-01")
 ```
