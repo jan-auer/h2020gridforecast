@@ -1,6 +1,3 @@
-# library(hdf5r)
-# library(dplyr)
-
 #' This function reads OPSD data in HDF5 format.
 #' 
 #' @param dataset String. Indicates an element in the config file's \code{datasets} list.
@@ -82,8 +79,19 @@ get_opsd_not_NaN <- function(dataset = "aux_opsd_15_train") {
   return(opsd %>% select(one_of(as.character(not_NaN_columns))))
 }
 
-### Retrieve Gosat data
+#' This function reads GOSAT data in HDF5 format.
+#' 
+#' @param dataset String. Indicates an element in the config file's \code{datasets} list.
+#' @param folders Vector. Defaults to an empty vector which means that all available folders being selectd. 
+#' Can designate selected folders.
+#' 
+#' @return A list of three data.frame objects called CO2, CH4 and H2O.
+#' Each data.frame has a column 'timestamp' and different measurement and metadata columns.
+#' 
+#' @author Jakob Etzel
 #' @export
+#' @import hdf5r
+#' @import dplyr
 get_gosat <- function(
   dataset = "aux_gosat_adapt",
   folders = c()
@@ -314,8 +322,18 @@ get_gosat <- function(
   return(list(CO2 = CO2, CH4 = CH4, H2O = H2O))
 }
 
-### Get time series for one or more power lines in form of a data.frame
+#' This function reads target data (power line measurements) in HDF5 format.
+#' 
+#' @param dataset String. Indicates an element in the config file's \code{datasets} list.
+#' @param ids Vector. Defaults to an empty vector which means that all available power lines are selectd. 
+#' Can designate selected power lines by their ids.
+#' 
+#' @return Data.frame of all measurements with a 'timestamp' column.
+#' 
+#' @author Jakob Etzel
 #' @export
+#' @import hdf5r
+#' @import dplyr
 get_power_lines <- function(
   ids = c(), 
   dataset = "train"
@@ -344,7 +362,16 @@ get_power_lines <- function(
   return(power_lines)
 }
 
+#' This function reads target data (power line measurements) in HDF5 format and saves it in RDS format.
+#' 
+#' @inheritParams get_power_lines
+#' @param target String. Folder where to save the file.
+#' @param desgination String. File name.
+#' 
+#' @author Jakob Etzel
 #' @export
+#' @import hdf5r
+#' @import dplyr
 convert_and_save_power_lines <- function(
   ids = c(), 
   dataset = "train", 
