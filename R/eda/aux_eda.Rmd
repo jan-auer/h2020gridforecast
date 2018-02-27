@@ -254,6 +254,29 @@ renderPlot({
 })
 ```
 
+### Wind/solar forecast
+There are non-empty time series available for wind forecasts for the four German transmission system operators (TSOs) TenneT, 50Hertz, Amprion, TransnetBW. Additionally, there are solar forecasts available for TenneT, Amprion.
+
+We examine these time series based on the [50 Hertz (TSO) wind data archive](http://www.50hertz.com/de/Kennzahlen/Windenergie/Archiv-Windenergie) of the year 2010. Predictions are available there in a 15 minute resolution (sic!). We can read the following values:
+
+```{r echo=FALSE}
+data.frame(
+  date = c("09.07.10", "09.07.10", "09.07.10", "09.07.10"),
+  start = c("05:00", "05:15", "05:30", "05:45"),
+  end = c("05:15", "05:30", "05:45", "06:00"),
+  forecast = c("926,38", "888,46", "850,55", "812,11")
+)
+```
+
+The average forecast value for this given hour is 896,375 which exactly ressembles the value of the respective aux opsd 60 time series:
+```{r}
+(aux_opsd_60_adapt_not_NaN %>% select(datetime, DE_50hertz_wind_forecast))[1,]
+```
+
+These values are [provided by 50 Hertz in advance](http://www.50hertz.com/de/Kennzahlen/Windenergie/Prognose) in the way that a quarter hour X on day Y in the data means the forecast for X and Y and it is published at day Y-1 18:00 for the public.
+
+On the contrary, in the auxiliary data provided by the competition organisers, values for quarter hour X on day Y are simulated to be made public only on day Y at the last full hour, this ranges from X-1 to X-4. Thus we loose most of its predictive character.
+
 ### Comparison
 The OPSD 15 train and adapt data set have the same columns. All OPSD 15 columns also appear in OPSD 60. For OPSD 15, the numbers of non-empty columns differ between training and adapt data set.
 ```{r}
