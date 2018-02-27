@@ -1,0 +1,13 @@
+Package: h2020gridforecast
+Title: H2020 Grid Forecast
+Version: 0.1
+Date: 2018-02-27
+Authors@R: c(
+    person("Jakob", "Etzel", email = "jakob.etzel@mantigma.com", role = c("cre", "aut")))
+Maintainer: Mantigma GmbH <office@mantigma.com>
+Description: Submission for Horizon Prize Big Data Technologies by Mantigma GmbH, QuantiCo and the Research Institute e-Austria (IeAT).
+License: file LICENSE
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 6.0.1
+Imports: hdf5r(>= 1.0.0), dplyr(>= 0.7.4)

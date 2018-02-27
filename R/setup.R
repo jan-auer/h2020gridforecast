@@ -1,6 +1,7 @@
-source(file = "hdf5_data_layer.R")
-convert_and_save_power_lines(ids = ids, dataset = "adapt", target = "../../local_data/")
-convert_and_save_power_lines(ids = ids, dataset = "train", target = "../../local_data/")
+library(h2020gridforecast)
+
+convert_and_save_power_lines(dataset = "adapt", target = "../../local_data/")
+convert_and_save_power_lines(dataset = "train", target = "../../local_data/")
 saveRDS(object = get_gosat(), file = "../../local_data/gosat.rds")
 
 saveRDS(
