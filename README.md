@@ -4,7 +4,7 @@ Submission for Horizon Prize Big Data Technologies by Mantigma GmbH, QuantiCo an
 ## About the competition
 To keep an electricity grid stable, at any moment demand and supply need to be matched exactly. In the past, the demand side had been forecasted and power generation schedules have been created for the supply side accordingly. Since years, wind and solar energy is added to the grid and as it is based on weather makes supply more and more volatile. Therefore, flows on the grids, which balance geographical separation of supply and demand, get more and more complex to forecast.
 
-The European Commission wants to stimulate and accelerate research in the field of such grid flow forecasts and therefore has started the [Big data technolgies competition](http://ec.europa.eu/research/horizonprize/index.cfm?prize=bigdata) within its Horizon 2020 programme with a total prize amount of EUR 2m.
+The European Commission wants to stimulate and accelerate research in the field of such grid flow forecasts and therefore has started the [Big data technolgies competition](http://ec.europa.eu/research/horizonprize/index.cfm?prize=bigdata) within its [Horizon 2020 programme](https://ec.europa.eu/programmes/horizon2020/) with a total prize amount of EUR 2m.
 
 Additional documents about the competition:
 * A collection of [FAQ](http://ec.europa.eu/research/horizonprize/pdf/bigdata/horizonprize_big_data_q-and-a.pdf#view=fit&pagemode=none)
