@@ -35,3 +35,6 @@ vignettes/*.pdf
 
 # Html files created by R markdown (not to be version controlled in git)
 *.html
+
+# R-packages (not to be version controlled)
+R/pkg/h2020gridforecast/packrat/*
