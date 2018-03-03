@@ -1,3 +1,7 @@
+# This script transforms the raw data (in datascience/starting-kit ) 
+# to the data to be used for analysis (in datascience/local_data ) 
+# using some functions in the "h2020gridforecast" package (within R-Studio press F2 to navigate to the function where the cursor is)
+
 library(h2020gridforecast)
 
 convert_and_save_power_lines(dataset = "adapt", target = "../../local_data/")
