@@ -46,6 +46,8 @@ saveRDS(train_all_summary_stats, file = "/home/datascience/local_data/train_all_
 # train_all_nested %>% arrange(desc(val_avg_abs)) 
 
 
-# XTS tranformations for visualisation with dygraphs
+# XTS tranformations for visualisation with dygraphs ####
 
+library(xts)
 
+train_all_xts <- xts(train_all %>% select(-time_stamp), order.by = train_all$time_stamp)
