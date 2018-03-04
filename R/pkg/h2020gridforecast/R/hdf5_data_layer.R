@@ -1,4 +1,6 @@
-#' This function reads OPSD data in HDF5 format.
+#' Converting OPSData to R
+#' 
+#' This function reads Open Power System Data (OPSD), provided by the organisers, in HDF5 format and converts them to a \link{data.frame}.
 #' 
 #' @param dataset String. Indicates an element in the config file's \code{datasets} list.
 #' 
@@ -366,7 +368,7 @@ get_power_lines <- function(
 #' 
 #' @inheritParams get_power_lines
 #' @param target String. Folder where to save the file.
-#' @param desgination String. File name.
+#' @param designation String. File name.
 #' 
 #' @author Jakob Etzel
 #' @export
