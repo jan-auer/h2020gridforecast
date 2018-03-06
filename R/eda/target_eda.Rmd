@@ -5,7 +5,7 @@ date: "26 Feb 2018"
 output: 
   html_document:
     toc: true
-    toc_depth: 2
+    toc_depth: 3
     toc_float: true
 runtime: shiny
 ---
@@ -17,8 +17,11 @@ library(knitr)
 library(randomcoloR)
 library(rje)
 library(reshape2)
+library(dplyr)
 library(ggplot2)
-source(file = "/home/datascience/h2020gridforecast/R/hdf5_data_layer.R")
+library(h2020gridforecast)
+library(xts)
+library(dygraphs)
 train_all <- readRDS(file = "../../../local_data/train_all.rds")
 adapt_all <- readRDS(file = "../../../local_data/adapt_all.rds")
 recalculate <- FALSE
@@ -76,15 +79,94 @@ train_all$datetime = as.POSIXct(train_all$timestamp, origin = "1970-01-01")
 ```
 
 ```{r echo=FALSE}
-renderPlot({
-  plot(
-    sort(train_all$datetime), 
-    train_all %>% 
-      arrange(datetime) %>% 
-      pull(input$target_train_column), 
-    type = "l"
+# renderPlot({
+#   plot(
+#     sort(train_all$datetime), 
+#     train_all %>% 
+#       arrange(datetime) %>% 
+#       pull(input$target_train_column), 
+#     type = "l"
+#   )
+#   title(main = input$target_train_column)
+# })
+
+renderDygraph({
+  dygraph(
+    xts(
+      x = train_all %>% arrange(datetime) %>% pull(input$target_train_column),
+      order.by = as.POSIXct(train_all %>% arrange(datetime) %>% pull(datetime), origin = "1970-01-01")
+    )
   )
-  title(main = input$target_train_column)
+})
+```
+
+### Crosscorrelations
+We have a look on how similar power lines are to each other. Therefore we calculate crosscorrelations over the whole train period for every pair of power lines.
+
+```{r echo=FALSE}
+if(recalculate) {
+  i <- 1916
+  grid <- expand.grid(x = 1:i, y = 1:i)
+  cors <- matrix(unlist(lapply(
+    1:(i*i), 
+      function(x) {
+        if(grid[x,1] > grid[x,2]) {
+          return(cor(train_all %>% pull(grid[x,1]), train_all %>% pull(grid[x,2])))
+        } else {
+          return(0)
+        }
+      }
+  )), nrow = i)
+  saveRDS(object = cors, file = "cors.Rds")
+} else {
+  cors <- readRDS(file = "cors.Rds")
+}
+
+print("pair with max correlation")
+which(cors == max(cors, na.rm = TRUE), arr.ind = TRUE)
+print("pair with min correlation")
+which(cors == min(cors, na.rm = TRUE), arr.ind = TRUE)
+```
+
+We print here two power lines which show high negative correlation to each other. It seems as if almost the same load goes through them, but with inversed sign. We can assume that those power lines are indeed running on the same line, but are measured with different directions. If a power line has two or three trunc bundles, it is common to split load evenly between them. The power lines are those with ids 72 and 73.
+
+```{r echo=FALSE}
+data <- train_all %>% select(timestamp, 73, 72)
+data_long <- melt(data = data, id.vars = 'timestamp')
+ggplot(data = data_long, mapping = aes(x = timestamp, y = value, colour = variable)) + geom_line()
+```
+
+Here, we show two strongly correlated power lines (94, 96). The graph gives the load of one of them in black and the difference between the two in red.
+
+```{r echo=FALSE}
+plot(train_all$`96`, type = "l")
+lines(train_all$`96` - train_all$`94`, type="l", col = "red")
+```
+
+Here, we show two strongly negative correlated power lines (72, 73). The graph gives the load of one of them in black and the sum of the two in red.
+
+```{r echo=FALSE}
+plot(train_all$`72`, type = "l")
+lines(train_all$`72` + train_all$`73`, type="l", col = "red")
+```
+
+### Spectral densities
+```{r echo=FALSE}
+selectInput(
+  inputId = "target_train_column_spectral", 
+  label = "power line ID:", 
+  choices=colnames(adapt_all %>% select(-timestamp))
+)
+selectInput(
+  inputId = "spectral_method",
+  label = "method: ",
+  choices = c("pgram", "ar")
+)
+```
+
+```{r echo=FALSE}
+renderPlot({
+  spectrum(train_all %>% pull(input$target_train_column_spectral), method = input$spectral_method)
 })
 ```
 
@@ -133,14 +215,13 @@ adapt_all$datetime = as.POSIXct(adapt_all$timestamp, origin = "1970-01-01")
 ```
 
 ```{r echo=FALSE}
-renderPlot({
-  plot(
-    sort(adapt_all$datetime), 
-    adapt_all %>% 
-      arrange(datetime) %>% 
-      pull(input$target_adapt_column), 
-    type = "l"
+renderDygraph({
+  dygraph(
+    xts(
+      x = train_all %>% arrange(datetime) %>% pull(input$target_adapt_column),
+      order.by = as.POSIXct(train_all %>% arrange(datetime) %>% pull(datetime), origin = "1970-01-01")
+    )
   )
-  title(main = input$target_adapt_column)
 })
+
 ```

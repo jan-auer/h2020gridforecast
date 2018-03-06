@@ -1,0 +1,49 @@
+---
+title: "Impact of auxiliary variables"
+author: "Jakob Etzel"
+date: "26 Feb 2018"
+output: 
+  html_document:
+    toc: true
+    toc_depth: 3
+    toc_float: true
+runtime: shiny
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(h2020gridforecast)
+library(dplyr)
+source(file = "../config.R")
+
+train_all <- readRDS(file = "../../../local_data/train_all.rds")
+aux_opsd_15_train_not_NaN <- readRDS(file = '../../../local_data/aux_opsd_15_train_not_NaN.rds')
+```
+
+## Impact of selected OPSD columns
+We have a look at the target train data and the OPSD 15 aux train data. We measure correlations between every third target measurement and every OPSD 15 measurement (15 min = 3 * 5 min). For a given OPSD 15 time series, we calculate correlations on the full available time span for every power line. We then give quantiles and a histogram for these correlation coefficients.
+
+For some variables, we see that there are a couple of power lines with a correlation coefficient above 0.5:
+* DE_tennet_wind_offshore_generation
+* 
+
+We could use the OPSD time series as an exogeneous variable to explain those power lines.
+
+```{r, echo=FALSE, warning=FALSE}
+selectInput(
+  inputId = "opsd15_column", 
+  label = "OPSD 15 time series:", 
+  choices=colnames(aux_opsd_15_train_not_NaN %>% select(-timestamp))
+)
+cors <- reactive({
+  unlist(lapply(1:1916, function (x) cor(aux_opsd_15_train_not_NaN %>% pull(input$opsd15_column), (train_all %>% pull(x))[0:105048 %% 3 == 0][1:11750])))
+})
+renderPrint({
+  summary(cors())
+})
+renderPlot({
+  hist(cors())
+})
+```
+

@@ -17,8 +17,10 @@ library(rworldmap)
 library(knitr)
 library(randomcoloR)
 library(rje)
+library(dplyr)
+library(h2020gridforecast)
+source(file = "../config.R")
 newmap <- getMap(resolution = "low")
-source(file = "/home/datascience/h2020gridforecast/R/hdf5_data_layer.R")
 ```
 
 ## GOSAT
