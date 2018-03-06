@@ -2,7 +2,7 @@
 % Please edit documentation in R/hdf5_data_layer.R
 \name{get_opsd}
 \alias{get_opsd}
-\title{This function reads OPSD data in HDF5 format.}
+\title{Converting OPSData to R}
 \usage{
 get_opsd(dataset = "aux_opsd_15_train")
 }
@@ -13,7 +13,7 @@ get_opsd(dataset = "aux_opsd_15_train")
 Data.frame with all measurement columns and a column timestamp with UNIX epoch timestamps.
 }
 \description{
-This function reads OPSD data in HDF5 format.
+This function reads Open Power System Data (OPSD), provided by the organisers, in HDF5 format and converts them to a \link{data.frame}.
 }
 \author{
 Jakob Etzel

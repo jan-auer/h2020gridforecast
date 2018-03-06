@@ -32,3 +32,14 @@ averaged_forecast <- function(history, start, horizon = 1, average_period = 3) {
   fc$timestamp <- start + 0:(horizon - 1) * 300
   return(fc)
 }
+
+#' Forecast with last day's values
+#'
+#' @inheritParams persistence_forecast
+#'
+#' @return Data.frame. Rows are timestamps, columns are power lines.
+#' @export
+copy_last_day <- function(history, start, horizon = 1) {
+  history$timestamp = history$timestamp + 24*60*60
+  return(history %>% filter(timestamp >= start, timestamp <= (start + (horizon - 1) * 60 * 5)))
+}

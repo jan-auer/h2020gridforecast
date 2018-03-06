@@ -16,7 +16,7 @@ Can designate selected power lines by their ids.}
 
 \item{target}{String. Folder where to save the file.}
 
-\item{desgination}{String. File name.}
+\item{designation}{String. File name.}
 }
 \description{
 This function reads target data (power line measurements) in HDF5 format and saves it in RDS format.

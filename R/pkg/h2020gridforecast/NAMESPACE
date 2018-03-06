@@ -2,6 +2,7 @@
 
 export(averaged_forecast)
 export(convert_and_save_power_lines)
+export(copy_last_day)
 export(get_gosat)
 export(get_opsd)
 export(get_opsd_not_NaN)
