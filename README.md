@@ -44,3 +44,16 @@ To create symlinks for shiny files, run the following in the shiny folder:
 ```
 ln ../h2020gridforecast/R/eda/aux_eda.Rmd aux_eda.Rmd
 ```
+## Leaderboard
+### horizon=12, steps=4
+forecast function | rmse     | oeet
+------------------|----------|------
+persistence       | 28.03879 |
+averaged          | 21.86697 |
+copy_last_day     | 38.96141 |
+
+### horizon=12, steps=168
+forecast function | rmse     | oeet
+------------------|----------|------
+persistence       |          |
+averaged          |          |
