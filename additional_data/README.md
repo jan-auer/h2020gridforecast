@@ -9,4 +9,15 @@ To get GOSAT data, a registration is necessary. We receive userID and set a pass
 
 The data is provided in hdf5 format with identical structure to the GOSAT data provided in the starting kit. Also, measurement version numbers are agreeing.
 
-Data should be downloaded in the folder `../../additional_data/` (relative to this file) by `wget -i [file list txt file] --http-user=[userID] --http-passwd=[password]` and extracted afterwards.
+Execute the following code in the folder `../../additional_data/` (relative to this file) to download, extract and rename the data.
+
+```
+mkdir GOSAT
+cd GOSAT
+wget -i [file list txt file] --http-user=[userID] --http-passwd=[password]
+for a in `ls -1 *.tar`; tar xf $a; done
+rm *.tar
+mv SWIRL2CO2 gosat_FTS_C01S_2
+mv SWIRL2CH4 gosat_FTS_C02S_2
+mv SWIRL2H2O gosat_FTS_C03S_2
+```

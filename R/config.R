@@ -24,6 +24,9 @@ datasets <- list(
   ),
   aux_NOAA_train = list(
     path = '/home/datascience/starting-kit/auxiliaryData/train/aux/NOAA_HYCOM/'
+  ),
+  add_gosat = list(
+    path = '/home/datascience/additional_data/GOSAT/'
   )
 )
 total_number_of_lines <- 1916

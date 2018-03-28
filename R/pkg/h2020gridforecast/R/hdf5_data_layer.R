@@ -101,7 +101,7 @@ get_gosat <- function(
 
   if(length(folders) == 0) {
     dirname <- paste0(datasets[[dataset]]$path, "gosat_FTS_C01S_2/")
-    subdirs <- list.dirs(path = dirname, full.names = FALSE)[-1]
+    subdirs <- list.dirs(path = dirname, full.names = FALSE)
     folders <- unlist(lapply(subdirs, function (x) as.integer(gsub(pattern = "X", replacement = "", x = x))))
   }
 
@@ -124,9 +124,17 @@ get_gosat <- function(
     XCO2 = double()
   )
   for(folder in folders) {
-    files <- list.files(path = paste0(dirname, "X", folder), full.names = FALSE, pattern = "*.h5")
+    if(is.na(folder)) {
+      files <- list.files(path = dirname, full.names = FALSE, pattern = "*h5")
+    } else {
+      files <- list.files(path = paste0(dirname, "X", folder), full.names = FALSE, pattern = "*.h5")
+    }
     for(ffile in files) {
-      filename <- paste0(dirname, "X", folder, "/", ffile)
+      if(is.na(folder)) {
+        filename <- paste0(dirname, ffile)
+      } else {
+        filename <- paste0(dirname, "X", folder, "/", ffile)
+      }
       file <- H5File$new(filename = filename, mode = "r")
   
       datestamp <- file[["Global/MD_Metadata/dateStamp"]][]

@@ -4,6 +4,8 @@
 
 library(h2020gridforecast)
 
+source(file = "config.R")
+
 convert_and_save_power_lines(dataset = "adapt", target = "../../local_data/")
 convert_and_save_power_lines(dataset = "train", target = "../../local_data/")
 saveRDS(object = get_gosat(), file = "../../local_data/gosat.rds")
@@ -32,4 +34,8 @@ saveRDS(
 saveRDS(
   object = get_opsd(dataset = "aux_opsd_60_adapt"), 
   file = "../../local_data/aux_opsd_60_adapt.rds"
+)
+saveRDS(
+  object = get_gosat(dataset = "add_gosat"),
+  file = "/home/datascience/local_data/add_gosat.rds"
 )
