@@ -16,27 +16,37 @@ A set of training and validation data was released in the beginning of February 
 
 
 ## Team
-The team consists of:
-- Accuracy team (mathematical formulation) - based in Vienna
-  - Jakob Etzel, managing director Mantigma
-  - Bernd Funovits, post-doctoral researcher econometrics, Uni Helsinki / TU Wien; Mantigma
-  - Jose Luis Salinas, post-doctoral researcher hydrology, TU Wien
-  - Alexander Braumann, PhD candidate mathematics, TU Braunschweig; Mantigma
-  - Kostiantyn Lapchevskyi, MSc candidate data science, UCU Lviv; Mantigma
-  - Zuzana Greganova, BSc candidate mathematics, TU Wien
-  - Fabian Schroeder, post-doctoral researcher computational statistics, TU Wien
-- Speed team (performance optimisation) - based in Timisoara
-  - Marc Frincu, assoc. professor computer science, UVT; IeAT
-  - Marius E. Penteliuc, MSc candidate computer science, UVT; IeAT
-  - Anca Vulpe, MSc candidate computer science, UVT; IeAT
-  - Florin Adrian Spătaru, PhD student computer science, UVT; IeAT
-  - Bogdan-Petru Butunoi, MSc student machine learning, UVT
+People contributing to the project (alphabetical order):
+- Alexander Braumann, PhD candidate mathematics, TU Braunschweig; statistician, Mantigma
+- Bogdan-Petru Butunoi, MSc student machine learning, UVT
+- Manfred Deistler, professor emeritus econometrics, TU Wien
+- Jakob Etzel, managing director, Mantigma
+- Marc Frincu, assoc. professor computer science, UVT; researcher, IeAT
+- Bernd Funovits, post-doctoral researcher econometrics, TU Wien; statistician, Mantigma
+- Zuzana Greganova, BSc candidate mathematics, TU Wien
+- Kostiantyn Lapchevskyi, MSc candidate data science, UCU Lviv; statistician, Mantigma
+- Marius E. Penteliuc, MSc candidate computer science, UVT; researcher, IeAT
+- Jose Luis Salinas, post-doctoral researcher hydrology, TU Wien
+- Fabian Schroeder, post-doctoral researcher computational statistics, TU Wien
+- Florin Adrian Spătaru, PhD student computer science, UVT; researcher, IeAT
+- Anca Vulpe, MSc candidate computer science, UVT; researcher IeAT
+- Daniela Zaharie, professor computer science, UVT
+
+## Folder structure
+*additional_data/* for data not provided in the starting kit, see `additional_data/README.md`
+*Python/* for Python code
+*R/* for R code
+*R/eda/* exploratory data analaysis
+*R/pkg/h2020gridforecast/* the R package we write
+*R/config/R* global R config file with e.g. paths
+*R/setup* files generating local_data
 
 ## Setup
 We assume the following folder structure (relative to this repo's folder):
 *../local_data* (a folder to store results / reformatted data)
 *../starting-kit* (the whole decompressed starting-kit folder)
 *../shiny* (a folder of symlinks to files/folders which should be served by the shiny server)
+*../additional_data* (a folder to store)
 
 Run the *R/setup.R* script to convert hdf5 data to R variables saved in rds files in *../local_data*.
 
