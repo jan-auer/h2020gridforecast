@@ -5,6 +5,13 @@ source(file = "config.R")
 train_all <- readRDS(file = "../../local_data/train_all.rds")
 adapt_all <- readRDS(file = "../../local_data/adapt_all.rds")
 
+forecast_functions <- c(
+  "persistence_forecast",
+  "averaged_forecast",
+  "copy_last_day",
+  "moving_average"
+)
+
 evaluate <- function(target, aux, start, horizon, steps, forecast_function) {
   overall_forecast <- target[c(), ]
   for(i in 1:steps){

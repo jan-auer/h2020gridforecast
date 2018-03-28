@@ -29,8 +29,36 @@ averaged_forecast <- function(history, start, horizon = 1, average_period = 3) {
   fc <- fc[(dim(fc)[1] - average_period + 1):dim(fc)[1],]
   fc <- matrix(colMeans(fc), nrow = 1)
   fc <- data.frame(fc[rep(1, horizon),])
+  if (horizon == 1) {
+    fc <- t(fc)
+  }
   fc$timestamp <- start + 0:(horizon - 1) * 300
   return(fc)
+}
+
+#' Moving Average forecast (MA[k])
+#' 
+#' Forecasts with the average value of a window with size k.
+#' 
+#' @inheritParams averaged_forecast
+#' 
+#' @return Data.frame Rows are timestamps, columns are power lines
+#' @export
+moving_average <- function(history, start, horizon = 1, average_period = 3) {
+  last_row_number <- dim(history)[1]
+  for (i in 1:horizon) {
+    history <- rbind(
+      history,
+      averaged_forecast(
+        history = history, 
+        start = max(history$timestamp) + 300, 
+        horizon = 1,
+        average_period = average_period
+      )
+    )
+    last_row_number <- last_row_number + 1
+  }
+  return(history[(last_row_number - horizon + 1):last_row_number,])
 }
 
 #' Forecast with last day's values
