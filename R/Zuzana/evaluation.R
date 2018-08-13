@@ -27,13 +27,14 @@ if (file.exists(file = "../../../local_data/filtered_data.Rds")==TRUE){
   #calculate maximum zero sequence length for each time series and return indices of time series that fulfill our criteria
   filtered_timeseries_indices<-filterdata(train_all, adapt_all, max_zero_length)
   
+  # same as new object  
+  saveRDS(object = filtered_timeseries_indices, file = "../../../local_data/filtered_data.Rds")
+}  
   # remove time series that are constantly zero for more than 10 hours
   filtered_training_data <- filtertrainingdata(train_all, filtered_timeseries_indices)
   filtered_test_data <- filtertestdata(adapt_all, filtered_timeseries_indices)
   
-  # same as new object  
-  saveRDS(object = filtered_timeseries_indices, file = "../../../local_data/filtered_data.Rds")
-}
+  
 
 
 # create a naive model for the data and return scaled errors
