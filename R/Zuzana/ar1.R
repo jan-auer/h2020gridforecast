@@ -2,7 +2,7 @@ library(tidyverse)
 
 #creates an autoregressive model and returns scaled errors
 
-arimaerrors <- function(filtered_training_data, filtered_test_data){
+arerrors <- function(filtered_training_data, filtered_test_data){
 
 entries_in_one_month <- 12*24*30  
 results <- numeric(nrow(filtered_test_data));
@@ -36,5 +36,8 @@ for(i in seq(1, ncol(filtered_training_data), 1)){
   ar1scaled_errors[i] <- ar1errors[i] / sd(training_data)
   
 }
+
 return (ar1scaled_errors)
+
 }
+

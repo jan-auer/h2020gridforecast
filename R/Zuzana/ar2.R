@@ -2,7 +2,7 @@ library(tidyverse)
 
 #creates an autoregressive model with a set maximum parameter (default: 24) and returns scaled errors
 
-arimaerrorswithsetparameter <- function(filtered_training_data, filtered_test_data, ar_parameter=24){
+arerrorswithsetparameter <- function(filtered_training_data, filtered_test_data, ar_parameter=24){
 
 entries_in_one_month <- 12*24*30  
 results <- numeric(nrow(filtered_test_data));
@@ -38,4 +38,6 @@ for(i in seq(1,ncol(filtered_training_data), 1)){
 }
 
 return (ar2scaled_errors)
+
 }
+

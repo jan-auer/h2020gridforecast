@@ -41,11 +41,30 @@ if (file.exists(file = "../../../local_data/filtered_data.Rds")==TRUE){
 naive_errors <- naiveerrors(filtered_training_data, filtered_test_data)
 
 # create two autoregressive models for the data and return scaled errors
-arima_errors <- arimaerrors(filtered_training_data, filtered_test_data)
-arima_errors_with_set_parameter <- arimaerrorswithsetparameter(filtered_training_data, filtered_test_data, arparameter)
+ar_errors <- arerrors(filtered_training_data, filtered_test_data)
+ar_errors_with_set_parameter <- arerrorswithsetparameter(filtered_training_data, filtered_test_data, arparameter)
 
 #return vector showing which model is best for each time series and plot results
-best_model <- bestmodel(naive_errors, arima_errors, arima_errors_with_set_parameter)
+best_model <- bestmodel(naive_errors, ar_errors, ar_errors_with_set_parameter)
+
+#evaluate results
+naive_percentage <- (sum(best_model == 1) / length(best_model)) * 100
+ar_percentage <- (sum(best_model == 2) / length(best_model)) * 100
+ar_with_parameter_percentage <- (sum(best_model == 3) / length(best_model)) * 100
+
+sprintf("The naive model was better %s percent of times", naive_percentage)
+sprintf("The ar model was better %s percent of times", ar_percentage)
+sprintf("The ar model with a maximum order was better %s percent of times", ar_with_parameter_percentage)
+
+
+#plot results
+x <- seq(1:length(naive_errors))
+error_table <- data.frame(naive_errors, ar_errors, ar_errors_with_set_parameter)
+errors_for_plot <- data.frame(x, log(error_table))
+matplot(errors_for_plot[, 1], errors_for_plot[, 2:4],  type="l", main="Errors Plot", xlab="Time Series", ylab="Errors")    
+grid()  
+
+
 
 #commit
 #slack
