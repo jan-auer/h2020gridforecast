@@ -11,8 +11,7 @@ library(ggplot2)
 # load functions
 source(file = "transform.R")
 source(file = "filter.R")
-source(file = "filter_training_data.R")
-source(file = "filter_test_data.R")
+source(file = "filter_by_indices.R")
 source(file = "naive.R")
 source(file = "ar1.R")
 source(file = "ar2.R")
@@ -34,8 +33,8 @@ if (file.exists(file = "../../../local_data/filtered_data.Rds")==TRUE){
 }  
 
 # remove time series that are constantly zero for more than 10 hours
-filtered_training_data <- filtertrainingdata(train_all, filtered_timeseries_indices)
-filtered_test_data <- filtertestdata(adapt_all, filtered_timeseries_indices)
+filtered_training_data <- filter_by_indices(train_all, filtered_timeseries_indices)
+filtered_test_data <- filter_by_indices(adapt_all, filtered_timeseries_indices)
 
 # create a naive model for the data and return scaled errors
 naive_errors <- naiveerrors(filtered_training_data, filtered_test_data)
