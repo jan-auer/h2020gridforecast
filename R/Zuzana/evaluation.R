@@ -5,6 +5,9 @@ max_zero_length <- 120
 arparameter <- 24
 use_preloaded_data <- TRUE
 
+# load libraries
+library(ggplot2)
+
 # load functions
 source(file = "transform.R")
 source(file = "filter.R")
@@ -14,7 +17,6 @@ source(file = "naive.R")
 source(file = "ar1.R")
 source(file = "ar2.R")
 source(file = "whichmodelisbest.R")
-
 
 # check whether file exists
 if (file.exists(file = "../../../local_data/filtered_data.Rds")==TRUE){
@@ -30,12 +32,10 @@ if (file.exists(file = "../../../local_data/filtered_data.Rds")==TRUE){
   # same as new object  
   saveRDS(object = filtered_timeseries_indices, file = "../../../local_data/filtered_data.Rds")
 }  
-  # remove time series that are constantly zero for more than 10 hours
-  filtered_training_data <- filtertrainingdata(train_all, filtered_timeseries_indices)
-  filtered_test_data <- filtertestdata(adapt_all, filtered_timeseries_indices)
-  
-  
 
+# remove time series that are constantly zero for more than 10 hours
+filtered_training_data <- filtertrainingdata(train_all, filtered_timeseries_indices)
+filtered_test_data <- filtertestdata(adapt_all, filtered_timeseries_indices)
 
 # create a naive model for the data and return scaled errors
 naive_errors <- naiveerrors(filtered_training_data, filtered_test_data)
@@ -63,8 +63,3 @@ error_table <- data.frame(naive_errors, ar_errors, ar_errors_with_set_parameter)
 errors_for_plot <- data.frame(x, log(error_table))
 matplot(errors_for_plot[, 1], errors_for_plot[, 2:4],  type="l", main="Errors Plot", xlab="Time Series", ylab="Errors")    
 grid()  
-
-
-
-#commit
-#slack
